@@ -2,12 +2,22 @@ import { detectInput } from "../detect";
 import { convertData } from "./handlers/data";
 import { convertImage } from "./handlers/image";
 import { convertTextToPdf } from "./handlers/text/pdf";
+import { assertFileSize } from "./limits";
 import { mimeFor, outputFilename, targetsFor } from "./targets";
 import type { ConversionResult, ProgressFn, TargetFormat } from "./types";
 import { report } from "./progress";
 
 export type { ConversionResult, InputKind, ProgressFn, TargetFormat } from "./types";
 export { targetsFor, TARGET_LABELS, UNSUPPORTED_COPY } from "./targets";
+export {
+  MAX_FILE_BYTES,
+  MAX_IMAGE_DIMENSION,
+  MAX_IMAGE_PIXELS,
+  GENERIC_CONVERT_ERROR,
+  FILE_TOO_LARGE_MESSAGE,
+  IMAGE_TOO_LARGE_MESSAGE,
+  errorMessage,
+} from "./limits";
 export { ocrToText } from "./handlers/ocr";
 export type { OcrOptions } from "./handlers/ocr";
 
@@ -26,6 +36,7 @@ export async function convert(
   onProgress?: ProgressFn,
 ): Promise<ConversionResult> {
   report(onProgress, 4);
+  assertFileSize(file);
   const kind = detectInput(file);
   if (kind === "unsupported") {
     throw new Error("Can't convert this type yet.");

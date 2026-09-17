@@ -1,4 +1,13 @@
-import { convert, TARGET_LABELS, targetsFor, UNSUPPORTED_COPY } from "./convert";
+import {
+  convert,
+  errorMessage,
+  FILE_TOO_LARGE_MESSAGE,
+  GENERIC_CONVERT_ERROR,
+  MAX_FILE_BYTES,
+  TARGET_LABELS,
+  targetsFor,
+  UNSUPPORTED_COPY,
+} from "./convert";
 import type { TargetFormat } from "./convert/types";
 import { detectInput, formatBytes, kindLabel } from "./detect";
 
@@ -17,6 +26,7 @@ const progressWrap = el<HTMLDivElement>("progress-wrap");
 const progressBar = el<HTMLProgressElement>("progress");
 const progressLabel = el<HTMLSpanElement>("progress-label");
 const fail = el<HTMLParagraphElement>("fail");
+const failMessage = el<HTMLSpanElement>("fail-message");
 const retryBtn = el<HTMLButtonElement>("retry");
 const done = el<HTMLDivElement>("done");
 const downloadBtn = el<HTMLButtonElement>("download");
@@ -78,9 +88,10 @@ function render(): void {
   setHidden(chip, !hasFile);
 
   const kind = currentFile ? detectInput(currentFile) : "unsupported";
-  const unsupported = hasFile && kind === "unsupported";
-  reject.textContent = UNSUPPORTED_COPY;
-  setHidden(reject, !unsupported);
+  const tooLarge = Boolean(currentFile && currentFile.size > MAX_FILE_BYTES);
+  const blocked = tooLarge || (hasFile && kind === "unsupported");
+  reject.textContent = tooLarge ? FILE_TOO_LARGE_MESSAGE : UNSUPPORTED_COPY;
+  setHidden(reject, !blocked);
 
   if (currentFile) {
     chipName.textContent = currentFile.name;
@@ -88,7 +99,7 @@ function render(): void {
   }
 
   const converting = phase === "converting";
-  const canChoose = hasFile && !unsupported && !converting;
+  const canChoose = hasFile && !blocked && !converting;
   formatSelect.disabled = !canChoose;
   convertBtn.disabled = !canChoose || formatSelect.value === "";
   setHidden(convertBtn, converting || phase === "done" || phase === "failed");
@@ -111,6 +122,7 @@ async function runConvert(): Promise<void> {
   if (!currentFile || formatSelect.value === "") return;
   const target = formatSelect.value as TargetFormat;
   phase = "converting";
+  failMessage.textContent = GENERIC_CONVERT_ERROR;
   setProgress(0);
   render();
 
@@ -122,7 +134,8 @@ async function runConvert(): Promise<void> {
     phase = "done";
     setProgress(100);
     render();
-  } catch {
+  } catch (err) {
+    failMessage.textContent = errorMessage(err);
     phase = "failed";
     render();
   }

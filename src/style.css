@@ -126,6 +126,13 @@ h1 {
   color: var(--danger);
 }
 
+.fail {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px 12px;
+}
+
 .field {
   display: flex;
   flex-direction: column;
