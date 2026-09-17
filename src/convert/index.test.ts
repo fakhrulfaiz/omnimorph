@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { detectInput } from "../detect";
-import { convert, ocrToText, targetsFor } from "./index";
+import {
+  convert,
+  FILE_TOO_LARGE_MESSAGE,
+  MAX_FILE_BYTES,
+  ocrToText,
+  targetsFor,
+} from "./index";
 import { convertTextToPdf } from "./handlers/text/pdf";
 
 function file(name: string, body: string, type: string): File {
@@ -60,6 +66,24 @@ describe("convert router", () => {
     await expect(
       convert(file("n.json", "{}", "application/json"), "pdf"),
     ).rejects.toThrow(/not available/);
+  });
+
+  it("surfaces invalid JSON, XML, and CSV parse errors", async () => {
+    await expect(
+      convert(file("n.json", "{", "application/json"), "json-pretty"),
+    ).rejects.toThrow("This JSON file is not valid.");
+    await expect(
+      convert(file("n.xml", "<nope", "application/xml"), "json"),
+    ).rejects.toThrow("This XML file is not valid.");
+    await expect(
+      convert(file("n.csv", '"unclosed', "text/csv"), "json"),
+    ).rejects.toThrow("This CSV file is not valid.");
+  });
+
+  it("rejects files over the size cap", async () => {
+    const huge = file("n.json", "{}", "application/json");
+    Object.defineProperty(huge, "size", { value: MAX_FILE_BYTES + 1 });
+    await expect(convert(huge, "json-pretty")).rejects.toThrow(FILE_TOO_LARGE_MESSAGE);
   });
 
   it("reports determinate progress", async () => {
