@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OmniMorph</title>
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <header class="header">
+        <h1>OmniMorph</h1>
+        <p class="lede">Convert a file in your browser.</p>
+      </header>
+
+      <div class="stack">
+        <input id="file-input" type="file" hidden />
+
+        <button type="button" id="dropzone" class="dropzone">
+          <span class="dropzone-title">Drop a file here</span>
+          <span class="dropzone-sub">or browse</span>
+        </button>
+
+        <div id="chip" class="chip" hidden>
+          <div class="chip-meta">
+            <div id="chip-name" class="chip-name"></div>
+            <div id="chip-info" class="chip-info"></div>
+          </div>
+          <button type="button" id="replace" class="btn-text">Replace</button>
+        </div>
+
+        <p id="reject" class="reject" hidden></p>
+
+        <label class="field" for="format">
+          <span>Choose format</span>
+          <select id="format" disabled>
+            <option value="">Choose format</option>
+          </select>
+        </label>
+
+        <button type="button" id="convert" class="btn-accent" disabled>
+          Convert
+        </button>
+
+        <div id="progress-wrap" class="progress-wrap" hidden>
+          <progress id="progress" max="100" value="0"></progress>
+          <span id="progress-label">0%</span>
+        </div>
+
+        <p id="fail" class="fail" hidden>
+          Couldn't convert this file.
+          <button type="button" id="retry" class="btn-text">Retry</button>
+        </p>
+
+        <div id="done" class="done" hidden>
+          <button type="button" id="download" class="btn-accent">Download</button>
+          <button type="button" id="another" class="btn-quiet">
+            Convert another
+          </button>
+        </div>
+      </div>
+    </main>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
